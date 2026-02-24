@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - ShopHub</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html" style="text-decoration: none; color: var(--primary-color); display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>ShopHub</span>
+                </a>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html#products" class="nav-link">Products</a>
+                <a href="index.html#about" class="nav-link">About</a>
+                <a href="index.html#contact" class="nav-link">Contact</a>
+                <button id="theme-toggle" class="theme-btn" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+            <a href="cart.html" class="cart-icon" title="View Cart">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count">0</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Cart Section -->
+    <section class="cart-page">
+        <div class="container">
+            <h1><i class="fas fa-shopping-cart"></i> Shopping Cart</h1>
+            
+            <!-- Empty Cart Message -->
+            <div id="empty-cart" class="empty-cart">
+                <i class="fas fa-inbox"></i>
+                <h2>Your cart is empty</h2>
+                <p>Add some amazing products to get started!</p>
+                <a href="index.html#products" class="btn btn-primary">Continue Shopping</a>
+            </div>
+
+            <!-- Cart Items Section -->
+            <div id="cart-items-section" class="cart-items-section" style="display: none;">
+                <div class="cart-table-wrapper">
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Subtotal</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart-items">
+                            <!-- Cart items will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Cart Summary -->
+                <div class="cart-summary">
+                    <div class="summary-card">
+                        <h3>Order Summary</h3>
+                        
+                        <div class="summary-item">
+                            <span>Subtotal:</span>
+                            <span id="subtotal">$0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Shipping:</span>
+                            <span id="shipping">FREE</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Tax (10%):</span>
+                            <span id="tax">$0.00</span>
+                        </div>
+                        
+                        <div class="summary-divider"></div>
+                        
+                        <div class="summary-total">
+                            <span>Total:</span>
+                            <span id="total">$0.00</span>
+                        </div>
+
+                        <button class="btn btn-primary btn-checkout">Proceed to Checkout</button>
+                        <a href="index.html#products" class="btn btn-secondary" style="text-align: center; text-decoration: none; display: block;">Continue Shopping</a>
+                    </div>
+
+                    <div class="summary-info">
+                        <h4><i class="fas fa-info-circle"></i> Cart Information</h4>
+                        <ul>
+                            <li><i class="fas fa-check"></i> Free shipping on all orders</li>
+                            <li><i class="fas fa-check"></i> 30-day money-back guarantee</li>
+                            <li><i class="fas fa-truck"></i> Delivery in 5-7 business days</li>
+                            <li><i class="fas fa-lock"></i> Secure checkout</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 ShopHub. All rights reserved.</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Theme Toggle Functionality (same as index.html)
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+
+        const currentTheme = localStorage.getItem('theme') || 'light-mode';
+        body.classList.add(currentTheme);
+        updateThemeIcon();
+
+        themeToggle.addEventListener('click', () => {
+            if (body.classList.contains('light-mode')) {
+                body.classList.remove('light-mode');
+                body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark-mode');
+            } else {
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+                localStorage.setItem('theme', 'light-mode');
+            }
+            updateThemeIcon();
+        });
+
+        function updateThemeIcon() {
+            const icon = themeToggle.querySelector('i');
+            if (body.classList.contains('dark-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        }
+
+        // Cart functionality
+        const cartCount = document.querySelector('.cart-count');
+        const emptyCart = document.getElementById('empty-cart');
+        const cartItemsSection = document.getElementById('cart-items-section');
+        const cartItemsTable = document.getElementById('cart-items');
+        const subtotalEl = document.getElementById('subtotal');
+        const taxEl = document.getElementById('tax');
+        const totalEl = document.getElementById('total');
+        const checkoutBtn = document.querySelector('.btn-checkout');
+
+        function loadCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+        }
+
+        function displayCart() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            loadCartCount();
+
+            if (cart.length === 0) {
+                emptyCart.style.display = 'flex';
+                cartItemsSection.style.display = 'none';
+            } else {
+                emptyCart.style.display = 'none';
+                cartItemsSection.style.display = 'block';
+                cartItemsTable.innerHTML = '';
+
+                let subtotal = 0;
+
+                cart.forEach((item, index) => {
+                    const itemTotal = item.price * item.quantity;
+                    subtotal += itemTotal;
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="product-name">${item.name}</td>
+                        <td class="product-price">$${item.price.toFixed(2)}</td>
+                        <td class="product-quantity">
+                            <div class="quantity-control">
+                                <button class="qty-btn minus-btn" onclick="decreaseQuantity(${index})">−</button>
+                                <input type="number" value="${item.quantity}" readonly class="qty-input">
+                                <button class="qty-btn plus-btn" onclick="increaseQuantity(${index})">+</button>
+                            </div>
+                        </td>
+                        <td class="product-subtotal">$${itemTotal.toFixed(2)}</td>
+                        <td class="product-action">
+                            <button class="btn-remove" onclick="removeItem(${index})" title="Remove item">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    cartItemsTable.appendChild(row);
+                });
+
+                // Calculate totals
+                const tax = subtotal * 0.1;
+                const total = subtotal + tax;
+
+                subtotalEl.textContent = '$' + subtotal.toFixed(2);
+                taxEl.textContent = '$' + tax.toFixed(2);
+                totalEl.textContent = '$' + total.toFixed(2);
+            }
+        }
+
+        window.increaseQuantity = function(index) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            if (cart[index]) {
+                cart[index].quantity++;
+                localStorage.setItem('cart', JSON.stringify(cart));
+                displayCart();
+            }
+        };
+
+        window.decreaseQuantity = function(index) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            if (cart[index] && cart[index].quantity > 1) {
+                cart[index].quantity--;
+                localStorage.setItem('cart', JSON.stringify(cart));
+                displayCart();
+            }
+        };
+
+        window.removeItem = function(index) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const itemName = cart[index].name;
+            cart.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            showNotification(`${itemName} removed from cart`);
+            displayCart();
+        };
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background-color: #28a745;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 5px;
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        checkoutBtn.addEventListener('click', () => {
+            showNotification('Proceeding to checkout... Thank you for your purchase!');
+            setTimeout(() => {
+                localStorage.removeItem('cart');
+                displayCart();
+            }, 2000);
+        });
+
+        // Load cart on page load
+        displayCart();
+    </script>
+</body>
+</html>
